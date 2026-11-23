@@ -12,11 +12,22 @@ import { join } from "node:path";
 
 const LETTER = "A"; // A = coffee, B = tea.
 
-function main(): void {
-  const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
-  mkdirSync(outputDir, { recursive: true });
+// The output directory comes from the first CLI argument, then
+// MAKEFUN_OUTPUT_DIR, then the sandbox default /output, so the same
+// program runs unchanged in the grader and in a local test.
+function outputDir(): string {
+  const fromArg = process.argv[2];
+  if (fromArg !== undefined && fromArg !== "") return fromArg;
+  const fromEnv = process.env.MAKEFUN_OUTPUT_DIR;
+  if (fromEnv !== undefined && fromEnv !== "") return fromEnv;
+  return "/output";
+}
 
-  const target = join(outputDir, "entry.txt");
+function main(): void {
+  const dir = outputDir();
+  mkdirSync(dir, { recursive: true });
+
+  const target = join(dir, "entry.txt");
   writeFileSync(target, LETTER, "utf8");
 
   // Read back and gate-check exactly what was written: one UTF-8
